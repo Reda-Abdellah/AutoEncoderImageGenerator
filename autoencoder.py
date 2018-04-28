@@ -6,10 +6,11 @@ from keras import losses
 import numpy as np
 import random
 import sys
+import os
 from PIL import Image
 
 amount_to_train_on=10**0
-number_of_epochs=200
+number_of_epochs=1000
 amount_of_pictures_to_generate=20
 folder_path_to_generated_output_files='GeneratedImages/'
 
@@ -22,8 +23,8 @@ def get_random_pixels_list(amount):
 	return [random.uniform(0,255) for i in range(amount)]
 
 # input_data_length = 64
-# file_path_to_lossy_encode = sys.argv[1]
-file_path_to_lossy_encode = 'TestAutoencoder2.png'
+file_path_to_lossy_encode = sys.argv[1]
+# file_path_to_lossy_encode = 'TestAutoencoder2.png'
 
 file_type_ending_to_lossy_encode=file_path_to_lossy_encode.split('.')[1]
 
@@ -31,7 +32,7 @@ file_type_ending_to_lossy_encode=file_path_to_lossy_encode.split('.')[1]
 img=Image.open(file_path_to_lossy_encode)
 
 # currently only accepting PNG images
-if(img.png ==None):
+if(img.format != 'PNG'):
 	print("Currently only accepting PNG images")
 	exit(1)
 # CONVERTING IMAGE TO MONOCHROME HERE
@@ -112,64 +113,60 @@ predicted_outputs=autoencoder.predict(random_pixels_array)
 
 
 
-# getting the current predicted output file that we want
-predicted_output=predicted_outputs[0]
-# getting the numpy array as a list
-output_data=list(predicted_output)
-# setting the new reconstructed image data
-new_img=Image.new('RGB',img.size)
+# # getting the current predicted output file that we want
+# predicted_output=predicted_outputs[0]
+# # getting the numpy array as a list and first reshaping to the needed array dimensions
+# output_data=list(predicted_output.reshape(img.size[0],img.size[1],3))
+# # setting the new reconstructed image data
+# new_img=Image.new('RGB',img.size)
 
-pixels=new_img.load()
-
-
-for yIndex in range(new_img.size[0]):
-	for xIndex in range(new_img.size[1]):
-		# pixels[yIndex, xIndex] = int(output_data[(xIndex+yIndex*new_img.size[1])])
-		# pixels[yIndex, xIndex] = numberBetween255ClampedTo0And1(output_data[(xIndex+yIndex*3*new_img.size[1])])
-		new_pixel=(int(output_data[(xIndex+yIndex*new_img.size[1]+0)]),int(output_data[(xIndex+yIndex*new_img.size[1]+1)]),int(output_data[(xIndex+yIndex*new_img.size[1]+2)]))
-		pixels[yIndex, xIndex] = new_pixel
-		# pixels[yIndex, xIndex][0] = int(output_data[(xIndex+yIndex*new_img.size[1]+0)])
-		# pixels[yIndex, xIndex][1] = int(output_data[(xIndex+yIndex*new_img.size[1]+1)])
-		# pixels[yIndex, xIndex][2] = int(output_data[(xIndex+yIndex*new_img.size[1]+2)])
+# pixels=new_img.load()
 
 
-output_file_name='generated_file_'+str(0)+'.'+file_type_ending_to_lossy_encode
-new_img.save(folder_path_to_generated_output_files+output_file_name,"PNG")
+# for yIndex in range(new_img.size[0]):
+# 	for xIndex in range(new_img.size[1]):
+# 		# pixels[yIndex, xIndex] = int(output_data[(xIndex+yIndex*new_img.size[1])])
+# 		# pixels[yIndex, xIndex] = numberBetween255ClampedTo0And1(output_data[(xIndex+yIndex*3*new_img.size[1])])
+# 		# new_pixel=(
+# 		# 	int(output_data[(xIndex+yIndex*new_img.size[1]+0)]),
+# 		# 	int(output_data[(xIndex+yIndex*new_img.size[1]+1)]),
+# 		# 	int(output_data[(xIndex+yIndex*new_img.size[1]+2)]),
+# 		# 	)
+# 		new_pixel=tuple(output_data[yIndex][xIndex])
+# 		pixels[yIndex, xIndex] = new_pixel
 
 
-
-# for curFileOutputIndex in range(len(predicted_outputs)):
-# 	# getting the current predicted output file that we want
-# 	predicted_output=predicted_outputs[curFileOutputIndex]
-# 	# getting the numpy array as a list
-# 	output_data=list(predicted_output)
-# 	# setting the new reconstructed image data
-# 	new_img=Image.new('RGB',img.size)
-
-# 	pixels=new_img.load()
+# output_file_name='generated_file_'+str(0)+'.'+file_type_ending_to_lossy_encode
+# new_img.save(folder_path_to_generated_output_files+output_file_name,"PNG")
 
 
-# 	for yIndex in range(new_img.size[0]):
-# 		for xIndex in range(new_img.size[1]):
-# 			# pixels[yIndex, xIndex] = int(output_data[(xIndex+yIndex*new_img.size[1])])
-# 			# pixels[yIndex, xIndex] = numberBetween255ClampedTo0And1(output_data[(xIndex+yIndex*3*new_img.size[1])])
-# 			new_pixel=(int(output_data[(xIndex+yIndex*new_img.size[1]+0)]),int(output_data[(xIndex+yIndex*new_img.size[1]+1)]),int(output_data[(xIndex+yIndex*new_img.size[1]+2)]))
-# 			pixels[yIndex, xIndex] = new_pixel
-# 			# pixels[yIndex, xIndex][0] = int(output_data[(xIndex+yIndex*new_img.size[1]+0)])
-# 			# pixels[yIndex, xIndex][1] = int(output_data[(xIndex+yIndex*new_img.size[1]+1)])
-# 			# pixels[yIndex, xIndex][2] = int(output_data[(xIndex+yIndex*new_img.size[1]+2)])
+# creating the generated images directory if it does not exists
+os.makedirs(folder_path_to_generated_output_files, exist_ok=True)
+
+for curFileOutputIndex in range(len(predicted_outputs)):
+	# getting the numpy array as a list and first reshaping to the needed array dimensions
+	predicted_output=predicted_outputs[curFileOutputIndex]
+	# getting the numpy array as a list
+	output_data=list(predicted_output.reshape(img.size[0],img.size[1],3))
+	# setting the new reconstructed image data
+	new_img=Image.new('RGB',img.size)
+	# loading the pixels of the newly created image so we can edit them
+	pixels=new_img.load()
 
 
-# 	output_file_name='generated_file_'+str(curFileOutputIndex)+'.'+file_type_ending_to_lossy_encode
-# 	new_img.save(folder_path_to_generated_output_files+output_file_name,"PNG")
+	for yIndex in range(new_img.size[0]):
+		for xIndex in range(new_img.size[1]):
+			# pixels[yIndex, xIndex] = int(output_data[(xIndex+yIndex*new_img.size[1])])
+			# pixels[yIndex, xIndex] = numberBetween255ClampedTo0And1(output_data[(xIndex+yIndex*3*new_img.size[1])])
+			# new_pixel=(
+			# 	int(output_data[(xIndex+yIndex*new_img.size[1]+0)]),
+			# 	int(output_data[(xIndex+yIndex*new_img.size[1]+1)]),
+			# 	int(output_data[(xIndex+yIndex*new_img.size[1]+2)]),
+			# 	)
+			new_pixel=tuple(output_data[yIndex][xIndex])
+			pixels[yIndex, xIndex] = new_pixel
 
-
-
-
-
-
-
-
-
+	output_file_name='generated_file_'+str(curFileOutputIndex)+'.'+file_type_ending_to_lossy_encode
+	new_img.save(folder_path_to_generated_output_files+output_file_name,"PNG")
 
 
